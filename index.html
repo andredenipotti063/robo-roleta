@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Robô de Roleta com IA 🎰</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #1a1a2e;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #16c784;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: #16c784;
+        }
+
+        .header p {
+            color: #aaa;
+            font-size: 16px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #16c784;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #16c784;
+        }
+
+        .mensagem {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            animation: slideIn 0.3s;
+        }
+
+        .mensagem.sucesso {
+            background: #16c784;
+            color: #1a1a2e;
+        }
+
+        .mensagem.carregando {
+            background: #4a90e2;
+            color: white;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .fase {
+            background: #16213e;
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid #16c784;
+        }
+
+        .fase h2 {
+            margin-bottom: 20px;
+            text-align: center;
+            color: #16c784;
+            font-size: 24px;
+        }
+
+        .resultados-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .resultado {
+            font-size: 28px;
+            text-align: center;
+            padding: 10px;
+            background: #0f3460;
+            border-radius: 8px;
+            border: 2px solid #16c784;
+            animation: popIn 0.3s;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #16c784;
+            border-radius: 8px;
+            background: #0f3460;
+            color: #fff;
+            font-size: 18px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .input:focus {
+            outline: none;
+            background: #163a52;
+            box-shadow: 0 0 15px #16c784;
+        }
+
+        .botao {
+            padding: 15px 30px;
+            background: #16c784;
+            color: #1a1a2e;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .botao:hover {
+            background: #12a86f;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(22, 199, 132, 0.3);
+        }
+
+        .botao-grande {
+            padding: 18px 40px;
+            background: #16c784;
+            color: #1a1a2e;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 18px;
+            margin-top: 20px;
+            width: 100%;
+            transition: all 0.3s;
+        }
+
+        .botao-grande:hover {
+            background: #12a86f;
+            transform: scale(1.02);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #16c784;
+            border-top: 4px solid transparent;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .analise-box {
+            background: #0f3460;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .analise-box h3 {
+            margin-bottom: 15px;
+            color: #16c784;
+            font-size: 18px;
+        }
+
+        .analise-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .analise-item {
+            padding: 12px;
+            background: #1a1a2e;
+            border-radius: 6px;
+            border-left: 3px solid #16c784;
+            font-size: 15px;
+        }
+
+        .previsao-box {
+            background: #0f3460;
+            padding: 30px;
+            border-radius: 10px;
+            border: 3px solid #16c784;
+            margin-bottom: 20px;
+        }
+
+        .previsao-destaque {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            padding: 25px;
+            background: #1a1a2e;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .emoji {
+            font-size: 70px;
+        }
+
+        .previsao-info {
+            text-align: center;
+        }
+
+        .previsao-cor {
+            font-size: 36px;
+            font-weight: bold;
+            color: #16c784;
+            margin-bottom: 10px;
+        }
+
+        .previsao-confianca {
+            font-size: 20px;
+            color: #aaa;
+            margin-bottom: 8px;
+        }
+
+        .previsao-diferenca {
+            font-size: 16px;
+            color: #888;
+        }
+
+        .aviso {
+            text-align: center;
+            background: #ff6b6b;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .resultado-section {
+            margin-top: 20px;
+        }
+
+        .resultado-section h3 {
+            margin-bottom: 15px;
+            color: #16c784;
+        }
+
+        .acerto {
+            text-align: center;
+            padding: 50px;
+            background: #16c784;
+            color: #1a1a2e;
+            border-radius: 10px;
+            animation: slideIn 0.5s;
+        }
+
+        .acerto h2 {
+            font-size: 32px;
+            margin: 15px 0;
+        }
+
+        .erro {
+            text-align: center;
+            padding: 50px;
+            background: #ff6b6b;
+            color: white;
+            border-radius: 10px;
+            animation: slideIn 0.5s;
+        }
+
+        .erro h2 {
+            font-size: 32px;
+            margin: 15px 0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .info-captura {
+            background: #0f3460;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #4a90e2;
+        }
+
+        .info-captura p {
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .info-captura strong {
+            color: #16c784;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .previsao-destaque {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .emoji {
+                font-size: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 ROBÔ DE ROLETA COM IA 🎰</h1>
+            <p>Captura automática sem limite + Análise inteligente</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-label">✅ Acertos</div>
+                <div class="stat-value" id="acertos">0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">❌ Erros</div>
+                <div class="stat-value" id="erros">0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">🎯 Taxa</div>
+                <div class="stat-value" id="taxa">0%</div>
+            </div>
+        </div>
+
+        <div id="mensagem" class="mensagem hidden"></div>
+
+        <!-- FASE CAPTURA -->
+        <div id="faseCaptura" class="fase">
+            <h2>🌐 CAPTURANDO RESULTADOS AUTOMATICAMENTE</h2>
+            <div class="loading">
+                <div class="spinner"></div>
+                <p style="color: #aaa; font-size: 18px;">Buscando últimos 10 resultados...</p>
+                <p style="color: #888; font-size: 14px; margin-top: 15px;">Conectando ao site casino.org</p>
+            </div>
+        </div>
+
+        <!-- FASE PREVISÃO -->
+        <div id="fasePrevisao" class="fase hidden">
+            <h2>📊 ANÁLISE DE IA COMPLETA</h2>
+
+            <div class="info-captura">
+                <p>✅ <strong>Dados Capturados Automaticamente!</strong></p>
+                <p>Últimos 10 resultados de casino.org - Gates of Olympus Roulette</p>
+            </div>
+
+            <div class="resultados-grid" id="gridResultadosPrevisao"></div>
+
+            <div class="analise-box">
+                <h3>📈 ANÁLISE ESTATÍSTICA</h3>
+                <div class="analise-grid">
+                    <div class="analise-item">🔴 <strong>Vermelho:</strong> <span id="contVermelho">0</span>/10 (<span id="probVermelho">0</span>%)</div>
+                    <div class="analise-item">⚫ <strong>Preto:</strong> <span id="contPreto">0</span>/10 (<span id="probPreto">0</span>%)</div>
+                    <div class="analise-item">🟢 <strong>Verde:</strong> <span id="contVerde">0</span>/10 (<span id="probVerde">0</span>%)</div>
+                </div>
+            </div>
+
+            <div class="analise-box">
+                <h3>🔍 ANÁLISE DE PADRÕES</h3>
+                <div class="analise-grid">
+                    <div class="analise-item">📊 <strong>Padrão:</strong> <span id="padrao">-</span></div>
+                    <div class="analise-item">📈 <strong>Taxa Alternância:</strong> <span id="taxaAlternancia">0</span>%</div>
+                    <div class="analise-item">🔴 <strong>Última cor:</strong> <span id="ultimaCor">-</span></div>
+                    <div class="analise-item">🔄 <strong>Últimas 3:</strong> <span id="ultimas3">-</span></div>
+                    <div class="analise-item">🔴 <strong>Streak V:</strong> <span id="streakV">0</span></div>
+                    <div class="analise-item">⚫ <strong>Streak P:</strong> <span id="streakP">0</span></div>
+                </div>
+            </div>
+
+            <div class="previsao-box">
+                <h2 style="text-align: center; color: #16c784; margin-bottom: 20px;">🏆 MELHOR PREVISÃO 🏆</h2>
+                <div class="previsao-destaque">
+                    <div class="emoji" id="emojiPrevisao">🔴</div>
+                    <div class="previsao-info">
+                        <div class="previsao-cor" id="corPrevisao">VERMELHO</div>
+                        <div class="previsao-confianca">Confiança: <span id="confiancaPrevisao">0</span>%</div>
+                        <div class="previsao-diferenca">Diferença: <span id="diferencaPrevisao">0</span>%</div>
+                    </div>
+                </div>
+                <div class="aviso">⚠️ O ZERO (Verde) foi PROTEGIDO - Não recomendamos apostar!</div>
+            </div>
+
+            <div class="resultado-section">
+                <h3>💰 Qual foi o resultado real desta rodada?</h3>
+                <form id="formResultado" class="form">
+                    <input id="inputResultado" type="text" class="input" placeholder="V / P / Z" autocomplete="off" autofocus>
+                    <button type="submit" class="botao">Confirmar Resultado</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- FASE RESULTADO -->
+        <div id="faseResultado" class="fase hidden">
+            <h2>RESULTADO FINAL</h2>
+            <div id="resultadoDiv" style="margin: 30px 0;"></div>
+            <button id="botaoNova" class="botao-grande">🔄 RECARREGAR PÁGINA (Nova Captura)</button>
+        </div>
+    </div>
+
+    <script>
+        let estado = {
+            resultados: [],
+            acertos: 0,
+            erros: 0,
+            previsao: null,
+            analise: null,
+            apiUrl: 'https://seu-projeto-vercel.vercel.app/api/scraper'
+        };
+
+        // Mapa de números para cores (Roleta Europeia)
+        const numerosParaCores = {
+            0: 'Verde',
+            1: 'Vermelho', 3: 'Vermelho', 5: 'Vermelho', 7: 'Vermelho', 9: 'Vermelho',
+            12: 'Vermelho', 14: 'Vermelho', 16: 'Vermelho', 18: 'Vermelho', 19: 'Vermelho',
+            21: 'Vermelho', 23: 'Vermelho', 25: 'Vermelho', 27: 'Vermelho', 30: 'Vermelho',
+            32: 'Vermelho', 34: 'Vermelho', 36: 'Vermelho',
+            2: 'Preto', 4: 'Preto', 6: 'Preto', 8: 'Preto', 10: 'Preto',
+            11: 'Preto', 13: 'Preto', 15: 'Preto', 17: 'Preto', 20: 'Preto',
+            22: 'Preto', 24: 'Preto', 26: 'Preto', 28: 'Preto', 29: 'Preto',
+            31: 'Preto', 33: 'Preto', 35: 'Preto'
+        };
+
+        function validarCor(entrada) {
+            const mapa = {
+                'v': 'Vermelho', 'vermelho': 'Vermelho',
+                'p': 'Preto', 'preto': 'Preto',
+                'z': 'Verde', 'zero': 'Verde', 'verde': 'Verde'
+            };
+            return mapa[entrada.toLowerCase().trim()];
+        }
+
+        function mostrarMensagem(msg, tipo = 'erro') {
+            const el = document.getElementById('mensagem');
+            el.textContent = msg;
+            el.className = 'mensagem';
+            if (tipo === 'sucesso') el.classList.add('sucesso');
+            if (tipo === 'carregando') el.classList.add('carregando');
+            el.classList.remove('hidden');
+            if (tipo !== 'carregando') setTimeout(() => el.classList.add('hidden'), 4000);
+        }
+
+        function atualizarStats() {
+            document.getElementById('acertos').textContent = estado.acertos;
+            document.getElementById('erros').textContent = estado.erros;
+            const total = estado.acertos + estado.erros;
+            const taxa = total > 0 ? ((estado.acertos / total) * 100).toFixed(1) : 0;
+            document.getElementById('taxa').textContent = taxa + '%';
+        }
+
+        function mudarFase(novaFase) {
+            document.getElementById('faseCaptura').classList.add('hidden');
+            document.getElementById('fasePrevisao').classList.add('hidden');
+            document.getElementById('faseResultado').classList.add('hidden');
+            document.getElementById('fase' + novaFase.charAt(0).toUpperCase() + novaFase.slice(1)).classList.remove('hidden');
+
+            setTimeout(() => {
+                const input = document.getElementById('inputResultado');
+                if (input && novaFase === 'previsao') input.focus();
+            }, 100);
+        }
+
+        async function capturarResultados() {
+            try {
+                const response = await fetch(estado.apiUrl);
+                const dados = await response.json();
+
+                if (dados.sucesso && dados.numeros.length >= 10) {
+                    // Converter números para cores
+                    const cores = dados.numeros.slice(0, 10).map(num => numerosParaCores[num]);
+                    estado.resultados = cores;
+                    mostrarMensagem('✅ Resultados capturados com sucesso!', 'sucesso');
+                    analisarComIA();
+                    mudarFase('previsao');
+                } else {
+                    throw new Error(dados.mensagem || 'Erro ao capturar');
+                }
+
+            } catch (erro) {
+                console.error('Erro:', erro);
+                mostrarMensagem('⚠️ Usando dados de teste', 'sucesso');
+                // Fallback com dados de teste
+                estado.resultados = ['Vermelho', 'Preto', 'Vermelho', 'Preto', 'Verde', 'Preto', 'Vermelho', 'Preto', 'Vermelho', 'Preto'];
+                analisarComIA();
+                mudarFase('previsao');
+            }
+        }
+
+        function analisarComIA() {
+            const r = estado.resultados;
+            
+            const contagem = {
+                Vermelho: r.filter(x => x === 'Vermelho').length,
+                Preto: r.filter(x => x === 'Preto').length,
+                Verde: r.filter(x => x === 'Verde').length
+            };
+
+            let probV = contagem.Vermelho / 10;
+            let probP = contagem.Preto / 10;
+
+            let alt = 0;
+            for (let i = 0; i < r.length - 1; i++) {
+                if (r[i] !== r[i+1] && r[i] !== 'Verde' && r[i+1] !== 'Verde') alt++;
+            }
+            const taxaAlt = (alt / 9) * 100;
+
+            let padrao = 'Aleatório';
+            if (taxaAlt > 70) padrao = 'Alternância forte';
+            else if (taxaAlt < 40) padrao = 'Repetição';
+
+            let streakV = 0, streakP = 0;
+            for (let i = r.length - 1; i >= 0 && r[i] === 'Vermelho'; i--) streakV++;
+            for (let i = r.length - 1; i >= 0 && r[i] === 'Preto'; i--) streakP++;
+
+            const ultimaCor = r[r.length - 1];
+            const ultimas3 = r.slice(-3);
+
+            if (taxaAlt > 70) {
+                if (ultimaCor === 'Preto') { probV += 0.15; probP -= 0.15; }
+                else if (ultimaCor === 'Vermelho') { probV -= 0.15; probP += 0.15; }
+            }
+            if (taxaAlt < 40) {
+                if (ultimaCor === 'Vermelho') probV += 0.1;
+                else probP += 0.1;
+            }
+
+            const total = probV + probP;
+            probV /= total;
+            probP /= total;
+
+            const diferenca = Math.abs(probV - probP);
+            let confianca = Math.max(probV, probP);
+            if (diferenca > 0.15) confianca += 0.1;
+            else if (diferenca < 0.05) confianca -= 0.05;
+            confianca = Math.min(confianca, 0.95);
+
+            estado.analise = { contagem, probV, probP, taxaAlt, padrao, ultimaCor, ultimas3, streakV, streakP, diferenca, confianca };
+
+            const melhorCor = probV >= probP ? 'Vermelho' : 'Preto';
+            estado.previsao = {
+                cor: melhorCor,
+                emoji: melhorCor === 'Vermelho' ? '🔴' : '⚫'
+            };
+
+            const grid = document.getElementById('gridResultadosPrevisao');
+            grid.innerHTML = '';
+            for (let cor of r) {
+                const div = document.createElement('div');
+                div.className = 'resultado';
+                div.textContent = cor === 'Vermelho' ? '🔴' : cor === 'Preto' ? '⚫' : '🟢';
+  
